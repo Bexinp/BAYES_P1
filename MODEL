@@ -2,6 +2,8 @@ import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
 
+# We chose the subject : "Dugongs: nonlinear growth curve".
+
 ### Data
 init = np.array([1, 1, 0.9, 1]) #[alpha, beta, gamma, tau]
 
