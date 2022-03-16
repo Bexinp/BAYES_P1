@@ -15,7 +15,55 @@ propsd = [0.2, 0.8, 0.1, 10] #Paramètres pour les différentes marches aléatoi
 
 
 
+def GibbsDugong(nchain, init, X, Y, propsd):
+  #on initialise la chaîne
+  chain=np.zeros((nchain+1,4))
+  alpha=init[0]
+  beta=init[1]
+  gamma=init[2]
+  tau=init[3]
+  chain[0]=init
 
+  for i in range (nchain):
+    #alpha
+    prop=alpha+propsd[0]*sp.stats.norm.rvs()
+    mu=alpha-beta*gamma**X
+    muprop=prop-beta*gamma**X
+    if prop>0:#condition sur le paramètre à respecter
+      ##top=((2*Y*muprop-muprop**2)/(2*tau)).sum()
+      ##bottom=((2*Y*mu-mu**2)/(2*tau)).sum()
+      top = np.sum(sp.stats.norm.logpdf(Y, muprop,1/ np.sqrt(tau)))
+      bottom = np.sum(sp.stats.norm.logpdf(Y, mu, 1/np.sqrt(tau)))
+      if np.exp(top-bottom)>np.random.uniform():
+        alpha=prop
+    #beta
+    prop=beta+propsd[1]*sp.stats.norm.rvs()
+    mu=alpha-beta*gamma**X
+    muprop=alpha-prop*gamma**X
+    if prop>0:#condition sur le paramètre à respecter
+      top=((2*Y*muprop-muprop**2)/2*tau).sum()
+      bottom=((2*Y*mu-mu**2)/2*tau).sum()
+      if np.exp(top-bottom)>np.random.uniform():
+        beta=prop
+    #gamma
+    prop=gamma+propsd[2]*sp.stats.norm.rvs()
+    mu=alpha-beta*gamma**X
+    muprop=alpha-beta*prop**X
+    if (prop>0 and prop<1):#condition sur le paramètre à respecter
+      top=((2*Y*muprop-muprop**2)/2*tau).sum()
+      bottom=((2*Y*mu-mu**2)/2*tau).sum()
+      if np.exp(top-bottom)>np.random.uniform():
+        gamma=prop
+    #tau
+    prop=tau+propsd[3]*sp.stats.norm.rvs()
+    mu=alpha-beta*gamma**X
+    if (prop>0):#condition sur le paramètre à respecter
+      top=(0.5*np.log(prop)-((Y-mu)**2)/2*prop).sum()
+      bottom=(0.5*np.log(tau)-((Y-mu)**2)/2*tau).sum()
+      if np.exp(top-bottom)>np.random.uniform():
+        tau=prop
+    chain[i+1]=[alpha, beta, gamma, tau]
+  return(chain)
 
 
 ### Résultats et Prédiction
